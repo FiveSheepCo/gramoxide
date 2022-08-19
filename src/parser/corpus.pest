@@ -1,0 +1,6 @@
+tab = _{ "\t" }
+number = { ASCII_DIGIT+ }
+word_prefix = { "ADJ" | "ADP" | "ADV" | "CONJ" | "DET" | "NOUN" | "NUM" | "PRON" | "PRT" | "VERB" | "X" }
+word = { (LETTER | !"_" ~ PUNCTUATION)* ~ ("_" ~ !word_prefix ~ LETTER+)? }
+entry = { word ~ tab ~ number ~ tab ~ number ~ tab ~ number }
+corpus = { (entry ~ NEWLINE)* }

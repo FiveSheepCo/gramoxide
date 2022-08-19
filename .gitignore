@@ -1,0 +1,9 @@
+/target
+
+# ngram corpus
+/*gram-*.txt
+/gramoxide_*.txt
+ngramindex.toml
+
+# misc
+log
