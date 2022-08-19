@@ -78,10 +78,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for corpus_list in corpus_container.corpus_lists {
         println!("Found corpus for {:?}", corpus_list.lang);
-        let path = PathBuf::new().join(format!("gramoxide_{}.txt", corpus_list.lang.to_ngram_lang_str()));
+        let path = PathBuf::new().join(format!(
+            "gramoxide_{}.txt",
+            corpus_list.lang.to_ngram_lang_str()
+        ));
         let analyzer = NgramAnalyzer::new(corpus_list);
         let frequencies = analyzer.analyze().await?;
-        let mut frequencies = frequencies.frequencies.into_iter().map(|(k, v)| (k, v)).collect::<Vec<_>>();
+        let mut frequencies = frequencies
+            .frequencies
+            .into_iter()
+            .map(|(k, v)| (k, v))
+            .collect::<Vec<_>>();
         frequencies.sort_by(|a, b| b.1.cmp(&a.1));
         println!("Writing {} entries to file", frequencies.len());
         let file = File::create(path).await?;

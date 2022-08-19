@@ -1,15 +1,10 @@
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::Path};
-use tokio::{
-    time::Instant,
-};
+use tokio::time::Instant;
 use tokio_stream::StreamExt;
 
-use crate::{
-    parser::parse_corpus_entry,
-    CorpusList,
-};
+use crate::{parser::parse_corpus_entry, CorpusList};
 
 const THRESHOLD: u32 = 0;
 const YEAR_THRESHOLD: u32 = 2000;
@@ -78,9 +73,15 @@ impl NgramAnalyzer {
                 // Remove any keys containing uppercase characters after the first char
                 .filter(|(k, _)| !k.chars().skip(1).any(|c| c.is_uppercase()))
                 // Remove two-letter keys ending in ascii punctuation
-                .filter(|(k, _)| !(k.len() == 2 && k.chars().last().map(|c| c.is_ascii_punctuation()) == Some(true)))
+                .filter(|(k, _)| {
+                    !(k.len() == 2
+                        && k.chars().last().map(|c| c.is_ascii_punctuation()) == Some(true))
+                })
                 .collect();
-            println!("[Analyzer] Found {} word-frequency pairs", local_frequencies.len());
+            println!(
+                "[Analyzer] Found {} word-frequency pairs",
+                local_frequencies.len()
+            );
             // Merge local frequencies into total frequencies
             println!("[Analyzer] Merging frequencies");
             let start_time = Instant::now();
@@ -94,7 +95,10 @@ impl NgramAnalyzer {
             println!("[Analyzer] Current count: {}", frequencies.len());
         }
         // Transform frequencies
-        println!("[Analyzer] Total word-frequency pairs: {}", frequencies.len());
+        println!(
+            "[Analyzer] Total word-frequency pairs: {}",
+            frequencies.len()
+        );
         // Choose best candidates
         println!("[Analyzer] Choosing best candidates");
         let start_time = Instant::now();
@@ -123,7 +127,12 @@ impl NgramAnalyzer {
                 }
             } else if k.starts_with(|c: char| c.is_lowercase()) {
                 let mut chars = k.chars();
-                let uppercase = chars.next().unwrap().to_uppercase().chain(chars).collect::<String>();
+                let uppercase = chars
+                    .next()
+                    .unwrap()
+                    .to_uppercase()
+                    .chain(chars)
+                    .collect::<String>();
                 if let Some(uppercase_v) = frequencies.get(&uppercase) {
                     dups.entry(Entry {
                         k: k.to_owned(),
@@ -143,14 +152,22 @@ impl NgramAnalyzer {
         for (lower, upper) in dups {
             let upper_frac = upper.v as f64 / (lower.v + upper.v) as f64;
             let entry = if upper_frac > 0.75 { upper } else { lower };
-            println!("[{}] {{ word: {}, upper_frac: {:.2}% }}", self.corpus_list.lang.to_ngram_lang_str(), entry.k, upper_frac * 100.0);
+            println!(
+                "[{}] {{ word: {}, upper_frac: {:.2}% }}",
+                self.corpus_list.lang.to_ngram_lang_str(),
+                entry.k,
+                upper_frac * 100.0
+            );
             final_frequencies.entry(entry.k).or_insert(entry.v);
         }
         println!(
             "[Analyzer] Choosing best candidates done (took {}s)",
             Instant::now().duration_since(start_time).as_secs()
         );
-        println!("[Analyzer] Total word-frequency pairs: {}", final_frequencies.len());
+        println!(
+            "[Analyzer] Total word-frequency pairs: {}",
+            final_frequencies.len()
+        );
         Ok(NgramFrequencies {
             frequencies: final_frequencies,
         })
